@@ -1,3 +1,4 @@
 .app {
   height: 100vh;
+  background: url("./assets/weather_bg.jpg") center no-repeat;
 }

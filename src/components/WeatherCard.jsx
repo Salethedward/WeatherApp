@@ -7,7 +7,7 @@ const WeatherCard = () => {
   );
 
   return (
-    <div className="p-6 border bg-gray-700 text-white w-[250px] h-[250px] flex flex-col justify-center items-center sm:w-[300px]">
+    <div className="p-6 border rounded-xl bg-gray-700 text-white w-[250px] h-[250px] flex flex-col justify-center items-center md:w-[300px]">
       {weather ? (
         <>
           <div className="text-3xl sm:text-4xl mb-3">{weather.name}</div>

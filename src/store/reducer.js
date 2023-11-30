@@ -27,7 +27,6 @@ const reducer = (state = initialState, action) => {
       return {
         ...state,
         results: [...filteredResults, action.payload],
-        // error: action.payload,
       };
     default:
       return state;

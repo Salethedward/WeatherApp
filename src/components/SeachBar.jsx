@@ -24,6 +24,24 @@ const SearchBar = () => {
     dispatch(setErrorMessage(""));
   };
 
+  // Using debounce for unwanted api requests
+  const debounce = (func, delay) => {
+    let timeoutId;
+    return function (...args) {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+      timeoutId = setTimeout(() => {
+        func.apply(null, args);
+      }, delay);
+    };
+  };
+
+  // Debounced version of fetchWeatherData
+  const debouncedFetchWeatherData = debounce((city) => {
+    fetchWeatherData(city);
+  }, 500);
+
   // Fetching the weather data from openweathermap open api
   const fetchWeatherData = (currCity) => {
     fetch(
@@ -47,7 +65,7 @@ const SearchBar = () => {
   // Handling dropdown in search input
   const handleDropdownSelect = (selectedCity) => {
     setCity(selectedCity);
-    fetchWeatherData(selectedCity);
+    debouncedFetchWeatherData(selectedCity);
     handleToggle(false);
   };
 
@@ -56,7 +74,7 @@ const SearchBar = () => {
     e.preventDefault();
     handleToggle(false);
     if (city) {
-      fetchWeatherData(city);
+      debouncedFetchWeatherData(city);
     } else {
       dispatch(setErrorMessage("Invaild city"));
     }
@@ -71,14 +89,14 @@ const SearchBar = () => {
     <div className="mb-28">
       <form onSubmit={handleSearch}>
         <div className="flex mx-1">
-          <div className="relative">
+          <div className="relative md:w-[300px]">
             <input
               type="text"
               name="city"
               value={city}
               onChange={handleChangeCity}
               onFocus={() => handleToggle(true)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-gray-700"
               placeholder="Enter city"
             />
 
@@ -100,7 +118,7 @@ const SearchBar = () => {
           </div>
           <button
             type="submit"
-            className="ml-1 px-4 py-2 bg-gray-700 text-white"
+            className="ml-1 px-4 py-2 bg-gray-700 rounded-md text-white hover:bg-gray-600 focus:border"
           >
             Search
           </button>
