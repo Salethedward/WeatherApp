@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useDispatch, useSelector, shallowEqual } from "react-redux";
 import {
   setWeatherData,
@@ -18,14 +18,8 @@ const SearchBar = () => {
 
   let api_key = "0cd714994780be8f3e6e0c5538314a36";
 
-  const handleChangeCity = (e) => {
-    setCity(e.target.value);
-    handleToggle(true);
-    dispatch(setErrorMessage(""));
-  };
-
   // Using debounce for unwanted api requests
-  const debounce = (func, delay) => {
+  const debounce = useCallback((func, delay) => {
     let timeoutId;
     return function (...args) {
       if (timeoutId) {
@@ -35,12 +29,30 @@ const SearchBar = () => {
         func.apply(null, args);
       }, delay);
     };
-  };
+  }, []);
 
   // Debounced version of fetchWeatherData
-  const debouncedFetchWeatherData = debounce((city) => {
-    fetchWeatherData(city);
-  }, 500);
+  const debouncedFetchWeatherData = useCallback(
+    debounce((city) => {
+      fetchWeatherData(city);
+    }, 400),
+    [debounce]
+  );
+
+  const handleChangeCity = useCallback(
+    (e) => {
+      let cityName = e.target.value;
+      setCity(cityName);
+      handleToggle(true);
+      if (cityName) {
+        debouncedFetchWeatherData(cityName);
+      } else {
+        dispatch(setErrorMessage(""));
+        handleToggle(false);
+      }
+    },
+    [debouncedFetchWeatherData, dispatch]
+  );
 
   // Fetching the weather data from openweathermap open api
   const fetchWeatherData = (currCity) => {
@@ -51,15 +63,19 @@ const SearchBar = () => {
       .then((data) => {
         if (data.cod == 404) {
           dispatch(setErrorMessage(data.message));
+          handleToggle(false);
         } else if (data.cod == 401) {
           dispatch(setErrorMessage("Invalid key"));
+          handleToggle(false);
         } else {
           dispatch(setWeatherData(data));
           dispatch(setResultsData(data));
           dispatch(setErrorMessage(""));
         }
       })
-      .catch((error) => dispatch(setErrorMessage("Invalid Input")));
+      .catch((error) => {
+        dispatch(setErrorMessage("Invalid Input"));
+      });
   };
 
   // Handling dropdown in search input
@@ -86,7 +102,7 @@ const SearchBar = () => {
   };
 
   return (
-    <div className="mb-28">
+    <div className="mb-32">
       <form onSubmit={handleSearch}>
         <div className="flex mx-1">
           <div className="relative md:w-[300px]">
